@@ -100,7 +100,7 @@ func (v *Vault) openEncryptedDatabase(path string, dbKey []byte) (err error) {
 	// Try SQLCipher v4 first (Enpass 6.8+), then fall back to v3 for older databases
 	for _, cipherVersion := range []int{4, 3} {
 		dbName := fmt.Sprintf(
-			"%s?_pragma_key=x'%s'&_pragma_cipher_compatibility=%d",
+			"%s?_pragma_key=x'%s'&_pragma_cipher_compatibility=%d&_busy_timeout=10000",
 			path,
 			hexKey,
 			cipherVersion,

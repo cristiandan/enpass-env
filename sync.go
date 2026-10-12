@@ -225,7 +225,10 @@ func cmdPull(o opts, args []string) error {
 		st := c.status()
 		switch st {
 		case noRemote:
-			return fmt.Errorf("no %q in Enpass (see `enpass-env list`, or push from the machine that has it)", c.title)
+			return fmt.Errorf("no %q in Enpass on this machine.\n"+
+				"If it was pushed elsewhere, Enpass here may not have synced it yet (last sync: %s):\n"+
+				"open Enpass and let it sync, then retry. `enpass-env list` shows what's here",
+				c.title, ago(lastSync(o)))
 		case upToDate:
 			fmt.Printf("%s is up to date (%s)\n", c.path, c.remoteLabel())
 			return c.recordInSync()
@@ -309,6 +312,9 @@ func cmdPush(o opts, args []string) error {
 			next.Version = c.note.Version + 1
 		}
 
+		if err := checkWritable(db, v.Info().VaultVersion); err != nil {
+			return err
+		}
 		if err := backupVault(o); err != nil {
 			return err
 		}
@@ -362,6 +368,13 @@ func cmdList(o opts, args []string) error {
 // printSyncAge says when Enpass on this machine last exchanged data with the
 // cloud, since pull and status only see what has synced down so far.
 func printSyncAge(o opts) {
+	if t := lastSync(o); !t.IsZero() {
+		fmt.Printf("(Enpass last synced with the cloud %s)\n", ago(t))
+	}
+}
+
+// lastSync is when Enpass last wrote its local copy of the cloud vault.
+func lastSync(o opts) time.Time {
 	syncDir := filepath.Join(filepath.Dir(filepath.Dir(o.vault)), ".sync", filepath.Base(o.vault))
 	matches, _ := filepath.Glob(filepath.Join(syncDir, "*.enpassdb"))
 	var newest time.Time
@@ -373,9 +386,7 @@ func printSyncAge(o opts) {
 			newest = fi.ModTime()
 		}
 	}
-	if !newest.IsZero() {
-		fmt.Printf("(Enpass last synced with the cloud %s)\n", ago(newest))
-	}
+	return newest
 }
 
 func fileMode(path string) os.FileMode {

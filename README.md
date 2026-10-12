@@ -131,11 +131,19 @@ treats it as a change made in Enpass.
 
 ### Sync timing
 
-Enpass doesn't notice changes written by enpass-env until its next sync. In
-testing it did not sync on its own within 10 minutes. **After `envpush`, make
-any small edit in Enpass** (or use its sync button) so the change uploads. On
-the receiving machine, Enpass has to sync down before `envpull` can see the
-change. `envpull` and `envstatus` print when Enpass last synced.
+Enpass checks the cloud every 10 minutes or so (even while locked), but it
+only **uploads** after a change made in the Enpass app itself. It tracks that
+in memory, so it never notices notes written by enpass-env on its own.
+**After `envpush`, make any small edit in Enpass** on that machine and the
+pending notes upload with it. On the receiving machine, Enpass has to sync down
+before `envpull` can see the change. `envpull` and `envstatus` print when
+Enpass last synced.
+
+Things that do *not* make Enpass upload, tested with Enpass 6.12.5:
+**Tools → Sync Now**, waiting for its scheduled check, restarting Enpass, and
+setting `sync_vault_dirty` in its sync metadata (`.sync/<vault>/syncmeta.db`),
+either while Enpass runs or before it starts. If you find a trigger, please
+open an issue.
 
 ## How it's stored
 

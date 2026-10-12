@@ -203,3 +203,26 @@ func TestStateBlock(t *testing.T) {
 		t.Fatal("matched a non-comment line")
 	}
 }
+
+func TestCheckWritable(t *testing.T) {
+	db, err := sql.Open("sqlite3", filepath.Join(t.TempDir(), "v.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(itemSchema); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkWritable(db, 6); err != nil {
+		t.Fatalf("tested layout rejected: %v", err)
+	}
+	if err := checkWritable(db, 7); err == nil || !strings.Contains(err.Error(), "version is 7") {
+		t.Fatalf("vault version not checked: %v", err)
+	}
+	if _, err := db.Exec(`ALTER TABLE item ADD COLUMN pinned INTEGER`); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkWritable(db, 6); err == nil || !strings.Contains(err.Error(), "pinned INTEGER") {
+		t.Fatalf("new column not detected: %v", err)
+	}
+}

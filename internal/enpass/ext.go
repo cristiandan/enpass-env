@@ -10,3 +10,6 @@ func (v *Vault) DB() *sql.DB { return v.db }
 // SetDatabaseFile points the vault at a different database file in the same
 // directory (e.g. a sync copy such as dropbox.enpassdb). Call before Open.
 func (v *Vault) SetDatabaseFile(path string) { v.databaseFilename = path }
+
+// Info returns the vault's vault.json metadata.
+func (v *Vault) Info() VaultInfo { return v.vaultInfo }
