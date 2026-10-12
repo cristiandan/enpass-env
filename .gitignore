@@ -1,0 +1,17 @@
+# Build output
+/bin/
+/enpass-env
+
+# Never commit secrets or vault data
+.env
+.env.*
+*.bak
+*.enpassdb
+*.enpassattach
+vault.json
+backups/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
